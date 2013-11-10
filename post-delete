@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+source $PLUGIN_PATH/hipache/hipache.sh
+
+VHOST=$(< "$DOKKU_ROOT/VHOST")
+SUBDOMAIN=${APP/%\.${VHOST}/}
+if [[ "$APP" == *.* ]] && [[ "$SUBDOMAIN" == "$APP" ]]; then
+  hostname="${APP/\//-}"
+else
+  hostname="${APP/\//-}.$VHOST"
+fi
+
+hipache_delete $hostname

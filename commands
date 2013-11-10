@@ -1,0 +1,58 @@
+#!/bin/bash
+set -e; 
+
+# Check if name is specified
+if [[ $1 == hipache:* ]]; then
+    if [[ -z $2 ]]; then
+        echo "You must specify an app name"
+        exit 1
+    else
+        APP="$2"
+        # Check if app exists with the same name
+        if [[ -d "$DOKKU_ROOT/$APP" ]]; then
+            APP_EXISTS=true
+        else
+            APP_EXISTS=false
+        fi
+    fi
+fi
+
+source $PLUGIN_PATH/hipache/hipache.sh
+
+case "$1" in
+  hipache:info)
+		app_hostname $APP	
+		hipache_info $hostname
+    ;;
+
+  hipache:frontend)
+		app_hostname $APP	
+		hipache_frontend $hostname $APP
+    ;;
+
+  hipache:backend)
+		app_hostname $APP	
+		hipache_backend $hostname $3
+    ;;
+
+  hipache:delete)
+		app_hostname $APP	
+		hipache_delete $hostname
+    ;;
+
+  hipache:config)
+		hipache_configure $1
+		;;
+
+  help)
+    cat && cat<<EOF
+    hipache:info <app>     		Display application information
+    hipache:frontend <app> 		Adds an application to hipache
+    hipache:backend <app> <url>  	Adds a backend server to an application
+    hipache:delete <app>  		Delete an application from hipache
+    hipache:config <redis>    		Configure redis host to use
+EOF
+    ;;
+
+esac
+cat

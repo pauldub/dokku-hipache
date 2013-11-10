@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -eo pipefail
+APP="$1"; PORT="$2"
+WILDCARD_SSL="$DOKKU_ROOT/ssl"
+SSL="$DOKKU_ROOT/$APP/ssl"
+CONTAINER=$(cat $DOKKU_ROOT/$APP/CONTAINER)
+
+source $PLUGIN_PATH/hipache/hipache.sh
+
+if [[ -f "$DOKKU_ROOT/VHOST" ]]; then
+  VHOST=$(< "$DOKKU_ROOT/VHOST")
+  SUBDOMAIN=${APP/%\.${VHOST}/}
+  if [[ "$APP" == *.* ]] && [[ "$SUBDOMAIN" == "$APP" ]]; then
+    hostname="${APP/\//-}"
+  else
+    hostname="${APP/\//-}.$VHOST"
+  fi
+
+  if [[ -f "$SSL/server.crt" ]] && [[ -f "$SSL/server.key" ]]; then
+    SSL_INUSE="$SSL"
+  elif  [[ -f "$WILDCARD_SSL/server.crt" ]] && [[ -f "$WILDCARD_SSL/server.key" ]] && [[ $hostname = `openssl x509 -in $WILDCARD_SSL/server.crt -noout -subject | tr '/' '\n' | grep CN= | cut -c4-` ]]; then
+    SSL_INUSE="$WILDCARD_SSL"
+  fi
+
+	if [[ $REDIS_URL = "127.0.0.1" ]]; then
+		BACKEND=127.0.0.1
+	else
+		BACKEND=$(docker inspect $CONTAINER | grep IPAddress | cut -d '"' -f 4)
+		PORT=5000
+	fi
+
+  # ssl based nginx.conf
+  if [[ -n "$SSL_INUSE" ]]; then
+		hipache_delete $hostname
+		hipache_frontend $hostname $APP
+		hipache_backend $hostname "https://$BACKEND:$PORT"
+    echo "https://$hostname" > "$DOKKU_ROOT/$APP/URL"
+  else
+		hipache_delete $hostname
+		hipache_frontend $hostname $APP
+		hipache_backend $hostname "http://$BACKEND:$PORT"
+    echo "http://$hostname" > "$DOKKU_ROOT/$APP/URL"
+  fi
+
+	echo "-----> Hipache configuration:"
+	for name in $(hipache_info $hostname); do
+		echo "       $name"
+	done
+fi
