@@ -21,36 +21,36 @@ source $PLUGIN_PATH/hipache/hipache.sh
 
 case "$1" in
   hipache:info)
-		app_hostname $APP	
-		hipache_info $hostname
+    app_hostname $APP 
+    hipache_info $hostname
     ;;
 
   hipache:frontend)
-		app_hostname $APP	
-		hipache_frontend $hostname $APP
+    app_hostname $APP 
+    hipache_frontend $hostname $APP
     ;;
 
   hipache:backend)
-		app_hostname $APP	
-		hipache_backend $hostname $3
+    app_hostname $APP 
+    hipache_backend $hostname $3
     ;;
 
   hipache:delete)
-		app_hostname $APP	
-		hipache_delete $hostname
+    app_hostname $APP 
+    hipache_delete $hostname
     ;;
 
   hipache:config)
-		hipache_configure $1
-		;;
+    hipache_configure $1
+    ;;
 
   help)
     cat && cat<<EOF
-    hipache:info <app>     		Display application information
-    hipache:frontend <app> 		Adds an application to hipache
-    hipache:backend <app> <url>  	Adds a backend server to an application
-    hipache:delete <app>  		Delete an application from hipache
-    hipache:config <redis>    		Configure redis host to use
+    hipache:info <app>        Display application information
+    hipache:frontend <app>    Adds an application to hipache
+    hipache:backend <app> <url>   Adds a backend server to an application
+    hipache:delete <app>      Delete an application from hipache
+    hipache:config <redis>        Configure redis host to use
 EOF
     ;;
 

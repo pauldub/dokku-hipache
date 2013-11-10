@@ -22,28 +22,28 @@ if [[ -f "$DOKKU_ROOT/VHOST" ]]; then
     SSL_INUSE="$WILDCARD_SSL"
   fi
 
-	if [[ $REDIS_URL = "127.0.0.1" ]]; then
-		BACKEND=127.0.0.1
-	else
-		BACKEND=$(docker inspect $CONTAINER | grep IPAddress | cut -d '"' -f 4)
-		PORT=5000
-	fi
+  if [[ $REDIS_URL = "127.0.0.1" ]]; then
+    BACKEND=127.0.0.1
+  else
+    BACKEND=$(docker inspect $CONTAINER | grep IPAddress | cut -d '"' -f 4)
+    PORT=5000
+  fi
 
   # ssl based nginx.conf
   if [[ -n "$SSL_INUSE" ]]; then
-		hipache_delete $hostname
-		hipache_frontend $hostname $APP
-		hipache_backend $hostname "https://$BACKEND:$PORT"
+    hipache_delete $hostname
+    hipache_frontend $hostname $APP
+    hipache_backend $hostname "https://$BACKEND:$PORT"
     echo "https://$hostname" > "$DOKKU_ROOT/$APP/URL"
   else
-		hipache_delete $hostname
-		hipache_frontend $hostname $APP
-		hipache_backend $hostname "http://$BACKEND:$PORT"
+    hipache_delete $hostname
+    hipache_frontend $hostname $APP
+    hipache_backend $hostname "http://$BACKEND:$PORT"
     echo "http://$hostname" > "$DOKKU_ROOT/$APP/URL"
   fi
 
-	echo "-----> Hipache configuration:"
-	for name in $(hipache_info $hostname); do
-		echo "       $name"
-	done
+  echo "-----> Hipache configuration:"
+  for name in $(hipache_info $hostname); do
+    echo "       $name"
+  done
 fi
